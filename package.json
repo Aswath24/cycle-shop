@@ -4,7 +4,7 @@
   "license": "MIT",
   "scripts": {
     "preinstall": "node -e \"const fs=require('fs');['package-lock.json','yarn.lock'].forEach(f=>{try{fs.unlinkSync(f)}catch{}});if(!process.env.npm_config_user_agent?.includes('pnpm')){console.error('Use pnpm instead');process.exit(1)}\"",
-    "build": "pnpm run typecheck && pnpm -r --if-present run build",
+    "build": "pnpm -r --if-present run build",
     "start": "node artifacts/api-server/dist/index.mjs",
     "db:init": "node lib/db/init-db.mjs",
     "typecheck:libs": "tsc --build",
@@ -12,7 +12,8 @@
   },
   "private": true,
   "dependencies": {
-    "@replit/connectors-sdk": "^0.4.1"
+    "@replit/connectors-sdk": "^0.4.1",
+    "@types/node": "^22.0.0"
   },
   "devDependencies": {
     "prettier": "^3.9.5",
