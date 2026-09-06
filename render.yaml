@@ -3,7 +3,7 @@ services:
     name: cycle-shop
     env: node
     plan: free
-    buildCommand: npm install -g pnpm && pnpm install && pnpm run build
+    buildCommand: npm install -g pnpm@9 && pnpm install --no-frozen-lockfile && pnpm run build
     startCommand: pnpm start
     envVars:
       - key: NODE_ENV
