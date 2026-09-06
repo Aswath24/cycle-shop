@@ -1,0 +1,734 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: Cycle Shop Dashboard API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: inventory
+    description: Inventory operations
+  - name: sales
+    description: Sales entry operations
+  - name: reports
+    description: Reporting operations
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /inventory:
+    get:
+      operationId: listInventory
+      tags: [inventory]
+      summary: List all inventory entries
+      responses:
+        "200":
+          description: List of inventory records
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InventoryListResponse"
+    post:
+      operationId: createInventory
+      tags: [inventory]
+      summary: Create a new inventory entry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InventoryInput"
+      responses:
+        "201":
+          description: Inventory entry created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Inventory"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Inventory item already exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /inventory/{id}:
+    get:
+      operationId: getInventory
+      tags: [inventory]
+      summary: Get an inventory item by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Inventory item found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Inventory"
+        "404":
+          description: Inventory item not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      operationId: updateInventory
+      tags: [inventory]
+      summary: Update an inventory item
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InventoryInput"
+      responses:
+        "200":
+          description: Inventory item updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Inventory"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Inventory item not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Inventory item already exists or cannot be updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteInventory
+      tags: [inventory]
+      summary: Delete an inventory item
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Inventory item deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "400":
+          description: Invalid inventory ID
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Inventory item not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Inventory item has linked sales
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /sales:
+    get:
+      operationId: listSales
+      tags: [sales]
+      summary: List all sales entries
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: pageSize
+          schema:
+            type: integer
+            default: 20
+        - in: query
+          name: month
+          schema:
+            type: ["string", "null"]
+          description: "Filter by month (e.g. 2025-07)"
+      responses:
+        "200":
+          description: List of sales
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SaleListResponse"
+    post:
+      operationId: createSale
+      tags: [sales]
+      summary: Create a new sale entry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaleInput"
+      responses:
+        "201":
+          description: Sale created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Sale"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /sales/{id}:
+    get:
+      operationId: getSale
+      tags: [sales]
+      summary: Get a sale by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Sale found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Sale"
+        "404":
+          description: Sale not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteSale
+      tags: [sales]
+      summary: Delete a sale entry
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Sale deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "404":
+          description: Sale not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      operationId: updateSale
+      tags: [sales]
+      summary: Update a sale entry
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaleInput"
+      responses:
+        "200":
+          description: Sale updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Sale"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Sale not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /sales/summary:
+    get:
+      operationId: getSalesSummary
+      tags: [sales]
+      summary: Get dashboard summary statistics
+      parameters:
+        - in: query
+          name: month
+          schema:
+            type: ["string", "null"]
+          description: "Month filter (e.g. 2025-07), defaults to current month"
+      responses:
+        "200":
+          description: Summary statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SalesSummary"
+
+  /sales/report:
+    get:
+      operationId: getSalesReport
+      tags: [reports]
+      summary: Generate a sales report for a date range
+      parameters:
+        - in: query
+          name: startDate
+          required: true
+          schema:
+            type: string
+          description: "Start date in YYYY-MM-DD format"
+        - in: query
+          name: endDate
+          required: true
+          schema:
+            type: string
+          description: "End date in YYYY-MM-DD format"
+      responses:
+        "200":
+          description: Sales report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SalesReport"
+        "400":
+          description: Invalid date range
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /sales/sync-sheets:
+    post:
+      operationId: syncToSheets
+      tags: [sales]
+      summary: Sync all sales data to Google Sheets
+      responses:
+        "200":
+          description: Sync result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SyncResult"
+        "503":
+          description: Google Sheets not configured
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+      required:
+        - success
+        - message
+
+    SaleInput:
+      type: object
+      required:
+        - date
+        - customerName
+        - customerPhone
+        - customerAddress
+        - cycleModel
+        - cycleSize
+        - cycleColor
+        - supplier
+        - inventoryId
+        - invoiceNo
+        - buyingPrice
+        - profitMargin
+        - discount
+        - gst
+        - modeOfPayment
+      properties:
+        date:
+          type: string
+          description: "Sale date in YYYY-MM-DD format"
+        customerName:
+          type: string
+        customerPhone:
+          type: string
+        customerAddress:
+          type: string
+        cycleModel:
+          type: string
+        cycleSize:
+          type: string
+        cycleColor:
+          type: string
+        supplier:
+          type: string
+        inventoryId:
+          type: integer
+        invoiceNo:
+          type: string
+        buyingPrice:
+          type: number
+        profitMargin:
+          type: number
+          description: "Profit margin percentage"
+        discount:
+          type: number
+          description: "Discount percentage"
+        gst:
+          type: number
+          description: "GST percentage"
+        modeOfPayment:
+          type: string
+        expenses:
+          type: ["number", "null"]
+
+    Sale:
+      type: object
+      required:
+        - id
+        - serialNo
+        - date
+        - customerName
+        - customerPhone
+        - customerAddress
+        - cycleModel
+        - cycleSize
+        - cycleColor
+        - supplier
+        - inventoryId
+        - invoiceNo
+        - buyingPrice
+        - profitMargin
+        - sellingPrice
+        - discount
+        - gst
+        - finalPrice
+        - profitPercent
+        - profitAmount
+        - lossPercent
+        - lossAmount
+        - modeOfPayment
+        - createdAt
+      properties:
+        id:
+          type: integer
+        serialNo:
+          type: integer
+        date:
+          type: string
+        customerName:
+          type: string
+        customerPhone:
+          type: string
+        customerAddress:
+          type: string
+        cycleModel:
+          type: string
+        cycleSize:
+          type: string
+        cycleColor:
+          type: string
+        supplier:
+          type: string
+        inventoryId:
+          type: ["integer", "null"]
+        invoiceNo:
+          type: string
+        buyingPrice:
+          type: number
+        profitMargin:
+          type: number
+        sellingPrice:
+          type: number
+        discount:
+          type: number
+        gst:
+          type: number
+        finalPrice:
+          type: number
+        profitPercent:
+          type: number
+        profitAmount:
+          type: number
+        lossPercent:
+          type: number
+        lossAmount:
+          type: number
+        modeOfPayment:
+          type: string
+        expenses:
+          type: ["number", "null"]
+        syncedToSheets:
+          type: boolean
+        createdAt:
+          type: string
+
+    SaleListResponse:
+      type: object
+      required:
+        - sales
+        - total
+        - page
+        - pageSize
+      properties:
+        sales:
+          type: array
+          items:
+            $ref: "#/components/schemas/Sale"
+        total:
+          type: integer
+        page:
+          type: integer
+        pageSize:
+          type: integer
+
+    InventoryInput:
+      type: object
+      required:
+        - cycleModel
+        - cycleSize
+        - cycleColor
+        - supplier
+        - buyingPrice
+        - profitMargin
+        - availableStock
+      properties:
+        cycleModel:
+          type: string
+        cycleSize:
+          type: string
+        cycleColor:
+          type: string
+        supplier:
+          type: string
+        buyingPrice:
+          type: number
+          description: "Buying price for this cycle variant"
+        profitMargin:
+          type: number
+          description: "Default profit margin percentage for this cycle variant"
+        availableStock:
+          type: integer
+          minimum: 0
+
+    Inventory:
+      type: object
+      required:
+        - id
+        - cycleModel
+        - cycleSize
+        - cycleColor
+        - supplier
+        - buyingPrice
+        - profitMargin
+        - availableStock
+        - soldStock
+        - balanceStock
+        - createdAt
+      properties:
+        id:
+          type: integer
+        cycleModel:
+          type: string
+        cycleSize:
+          type: string
+        cycleColor:
+          type: string
+        supplier:
+          type: string
+        buyingPrice:
+          type: number
+        profitMargin:
+          type: number
+        availableStock:
+          type: integer
+        soldStock:
+          type: integer
+        balanceStock:
+          type: integer
+        createdAt:
+          type: string
+
+    InventoryListResponse:
+      type: object
+      required:
+        - inventory
+      properties:
+        inventory:
+          type: array
+          items:
+            $ref: "#/components/schemas/Inventory"
+
+    SalesSummary:
+      type: object
+      required:
+        - totalSales
+        - totalRevenue
+        - totalProfit
+        - totalLoss
+        - totalExpenses
+        - averageMargin
+        - profitableCount
+        - lossCount
+        - monthLabel
+      properties:
+        totalSales:
+          type: integer
+        totalRevenue:
+          type: number
+        totalProfit:
+          type: number
+        totalLoss:
+          type: number
+        totalExpenses:
+          type: number
+        averageMargin:
+          type: number
+        profitableCount:
+          type: integer
+        lossCount:
+          type: integer
+        monthLabel:
+          type: string
+        recentSales:
+          type: array
+          items:
+            $ref: "#/components/schemas/Sale"
+
+    SalesReport:
+      type: object
+      required:
+        - startDate
+        - endDate
+        - sales
+        - summary
+      properties:
+        startDate:
+          type: string
+        endDate:
+          type: string
+        sales:
+          type: array
+          items:
+            $ref: "#/components/schemas/Sale"
+        summary:
+          $ref: "#/components/schemas/ReportSummary"
+
+    ReportSummary:
+      type: object
+      required:
+        - totalSales
+        - totalRevenue
+        - totalProfit
+        - totalLoss
+        - totalExpenses
+        - netProfit
+      properties:
+        totalSales:
+          type: integer
+        totalRevenue:
+          type: number
+        totalProfit:
+          type: number
+        totalLoss:
+          type: number
+        totalExpenses:
+          type: number
+        netProfit:
+          type: number
+
+    SyncResult:
+      type: object
+      required:
+        - success
+        - message
+        - rowsSynced
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        rowsSynced:
+          type: integer
